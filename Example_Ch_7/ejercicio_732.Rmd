@@ -1,0 +1,79 @@
+---
+title: "Capitulo 7"
+author: "Cesar Zamora"
+date: "3/15/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Paquetes para el analisis
+library(haven)
+library(tidyverse)
+data <- read_sav("chapter.7.sav")
+```
+
+## Ejercicio 7.3.2, página 269
+
+**Código original**
+
+```{r eval=FALSE}
+MATRIX./*7-3-2 page 269.
+get y1/variable y1m,y2m,y3m,y4m/missing=omit.
+get y2/variable y1f,y2f,y3f,y4f/missing=omit.
+COMPUTE n1=nrow(y1).
+COMPUTE n2=nrow(y2).
+COMPUTE onem1=make(n1,n1,1).
+COMPUTE onem2=make(n2,n2,1).
+COMPUTE i1=ident(n1).
+COMPUTE i2=ident(n2).
+COMPUTE s1=t(y1)*(i1-onem1/n1)*y1/(n1-1).
+COMPUTE s2=t(y2)*(i2-onem2/n2)*y2/(n2-1).
+COMPUTE spl=((n1-1)*s1+(n2-1)*s2)/(n1+n2-2).
+COMPUTE lnm=((n1-1)*ln(det(s1))+(n2-1)*ln(det(s2)))/2-(n1+n2-2)*ln(det(spl))/2.
+COMPUTE boxm=-2*lnm.
+PRINT s1.
+PRINT s2.
+PRINT spl.
+PRINT lnm.
+PRINT boxm.
+end matrix.%
+```
+
+
+**Traducción del código a R**
+
+
+```{r 7.3.2}
+# selecionamos columnas omitiendo NA
+y1 <- data %>% select(y1m,y2m,y3m,y4m) %>% drop_na() %>% as.matrix()
+y2 <- data %>% select(y1f,y2f,y3f,y4f) %>% drop_na() %>% as.matrix()
+# Numero de renglones de los vectores anteriores
+n1<-nrow(y1)
+n2<-nrow(y2)
+## Matrices llenas de unos
+onem1 <- matrix(1, n1, n1)
+onem2 <- matrix(1, n2, n2)
+## Matrices diagonales
+i1 <- diag(n1)
+i2 <- diag(n2)
+# Matrices de covarianza
+s1 <- t(y1)%*%(i1-onem1/n1)%*%y1/(n1-1) # Alternativamente basta usar s1<-var(y1)
+s2 <- t(y2)%*%(i2-onem2/n2)%*%y2/(n2-1) # Alternativamente basta usar s1<-var(y2)
+spl <- ((n1-1)*s1+(n2-1)*s2)/(n1+n2-2)
+# Estadisticos
+lnm <- ((n1-1)*log(det(s1))+(n2-1)*log(det(s2)))/2-(n1+n2-2)*log(det(spl))/2.
+boxm <- -2*lnm
+```
+
+**Resultados**
+
+```{r Resultados}
+s1
+s2
+spl
+lnm
+boxm
+```
+
